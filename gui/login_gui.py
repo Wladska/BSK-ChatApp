@@ -1,4 +1,3 @@
-from gui.chat_gui import *
 from gui.styles import *
 from Client import startClient
 
@@ -20,7 +19,7 @@ class LoginWidget:
         self.description.place(relheight = 0.15,
                        relx = 0.2,
                        rely = 0.07)
-        #Username
+        # Username
         self.usernameLabel = Header2(self.loginWindow, darkmode=True, text = "Username: ", justify=LEFT)
         self.usernameLabel.place(relheight = 0.2,
                                     relx = 0.15,
@@ -32,13 +31,13 @@ class LoginWidget:
                              relheight = 0.12,
                              relx = 0.4,
                              rely = 0.25)
-        #Password
+        # Password
         self.pswdLabel = Header2(self.loginWindow, darkmode=True, text = "Password: ", justify=LEFT)
         self.pswdLabel.place(relheight = 0.2,
                                     relx = 0.15,
                                     rely = 0.35)
         
-        self.pswdField = TextField(self.loginWindow)
+        self.pswdField = TextField(self.loginWindow, show="*")
          
         self.pswdField.place(relwidth = 0.4,
                              relheight = 0.12,
@@ -58,7 +57,6 @@ class LoginWidget:
         self.loginButton.place(relx = 0.15, rely = 0.60)
 
     def validateUserInput(self, name, window):
-        #add some user validation idk
+        # add some user validation
         self.loginWindow.destroy()
-        startClient("192.168.1.100", 9090, name)
-        ChatGUI(window, name)
+        startClient("192.168.1.100", 9090, name, window)

@@ -1,14 +1,13 @@
-from tkinter import *
-from tkinter import font
-from tkinter import ttk
 from gui.styles import *
 from fileupload.fileuploader import *
 
+
 class ChatGUI:
 
-    def __init__(self, window, username):
+    def __init__(self, window, username, client):
         self.rootWindow = window
         self.username = username
+        # self.client = client
         
         self.rootWindow.deiconify()
         self.rootWindow.title("BSK-ChatApp")
@@ -97,5 +96,6 @@ class ChatGUI:
 
     # function to basically start the thread for sending messages
     def sendButtonOnClick(self, msg):
+        self.client.msg = msg
         # TODO @Marcel.Bieniek
         return 1

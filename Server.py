@@ -27,11 +27,24 @@ class Server:
             print("New connection from ", addr)
 
     def handleClient(self, conn, addr):
-        self.s.recv()
-        print(f"client #{addr[1]}: ")
-        pass
+        connected = True
+
+        while connected:
+            # receive message
+            message = conn.recv(1024)
+
+            # broadcast message
+            self.broadcastMessage(message)
+
+        # close the connection
+        conn.close()
+        # print(f"client #{addr[1]}: ")
+        # pass
         # conn.close()
 
+    def broadcastMessage(self, message):
+        for client in self.clients:
+            client[0].send(message)
 
 def startServer(addr, port):
     server = Server(addr, port)
