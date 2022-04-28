@@ -1,5 +1,7 @@
 from gui.chat_gui import *
 from gui.styles import *
+from Client import startClient
+
 
 class LoginWidget:
 
@@ -58,4 +60,5 @@ class LoginWidget:
     def validateUserInput(self, name, window):
         #add some user validation idk
         self.loginWindow.destroy()
+        startClient("192.168.1.100", 9090, name)
         ChatGUI(window, name)
