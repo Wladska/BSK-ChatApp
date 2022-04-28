@@ -1,5 +1,5 @@
 from gui.styles import *
-from Client import startClient
+from chat.Client import startClient
 
 
 class LoginWidget:

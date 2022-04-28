@@ -1,7 +1,8 @@
 from tkinter import filedialog
 
+
 class FileUploader:
-     def __init__(self):
+    def __init__(self):
         filetypes = (
             ('Text files', '*.txt'),
             ('Text files', "*.png"),
