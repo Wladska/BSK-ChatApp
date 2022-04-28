@@ -4,6 +4,7 @@ from tkinter import *
 from fileupload.fileuploader import *
 import threading
 
+
 class Client:
     def __init__(self, serverAddr, serverPort, clientName, window):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
