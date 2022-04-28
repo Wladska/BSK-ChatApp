@@ -1,6 +1,8 @@
 from tkinter import *
 from tkinter import font
 from tkinter import ttk
+from gui.styles import *
+from fileupload.fileuploader import *
 
 class ChatGUI:
 
@@ -14,29 +16,23 @@ class ChatGUI:
                               height = False)
         self.rootWindow.configure(width = 470,
                               height = 550,
-                              bg = "#17202A")
-        self.headLabel = Label(self.rootWindow,
-                             bg = "#17202A",
-                              fg = "#EAECEE",
-                              text = self.username ,
-                               font = "Helvetica 13 bold",
-                               pady = 5)
+                              bg = black)
+        self.headLabel = Header1B(self.rootWindow, darkmode = True,
+                                text = self.username ,
+                                pady = 5)
          
         self.headLabel.place(relwidth = 1)
         self.line = Label(self.rootWindow,
                           width = 450,
-                          bg = "#ABB2B9")
+                          bg = blue)
          
         self.line.place(relwidth = 1,
                         rely = 0.07,
                         relheight = 0.012)
          
-        self.textCons = Text(self.rootWindow,
+        self.textCons = MessageConsole(self.rootWindow,
                              width = 20,
                              height = 2,
-                             bg = "#17202A",
-                             fg = "#EAECEE",
-                             font = "Helvetica 14",
                              padx = 5,
                              pady = 5)
          
@@ -45,16 +41,13 @@ class ChatGUI:
                             rely = 0.08)
          
         self.bottomLabel = Label(self.rootWindow,
-                                 bg = "#ABB2B9",
+                                 bg = blue,
                                  height = 80)
          
         self.bottomLabel.place(relwidth = 1,
                                rely = 0.825)
          
-        self.messageEntry = Entry(self.bottomLabel,
-                              bg = "#2C3E50",
-                              fg = "#EAECEE",
-                              font = "Helvetica 13")
+        self.messageEntry = MultiLineTextFiled(self.bottomLabel)
          
         # place the given widget
         # into the gui window
@@ -65,17 +58,25 @@ class ChatGUI:
          
         self.messageEntry.focus()
          
-        # create a Send Button
-        self.sendButton = Button(self.bottomLabel,
+        # Send Button
+        self.sendButton = CustomButton(self.bottomLabel,
                                 text = "Send",
-                                font = "Helvetica 10 bold",
                                 width = 20,
-                                bg = "#ABB2B9",
                                 command = lambda : self.sendButtonOnClick(self.messageEntry.get()))
          
         self.sendButton.place(relx = 0.77,
                              rely = 0.008,
-                             relheight = 0.06,
+                             relheight = 0.03,
+                             relwidth = 0.22)
+        # Add file Button
+        self.addFileButton = CustomButton(self.bottomLabel,
+                                text = "Add file",
+                                width = 20,
+                                command = lambda : self.addFileButtonOnClick())
+         
+        self.addFileButton.place(relx = 0.77,
+                             rely = 0.040,
+                             relheight = 0.03,
                              relwidth = 0.22)
          
         self.textCons.config(cursor = "arrow")
@@ -90,6 +91,9 @@ class ChatGUI:
          
         self.textCons.config(state = DISABLED)
 
+    # function to basically start the thread for sending messages
+    def addFileButtonOnClick(self):
+        FileUploader()
 
     # function to basically start the thread for sending messages
     def sendButtonOnClick(self, msg):
