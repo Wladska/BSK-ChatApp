@@ -1,5 +1,5 @@
 from tkinter import *
-from client.ClientController import ClientNetworkController
+from client.ClientNetworkController import ClientNetworkController
 from client.ClientChatView import ClientChatView
 from client.ClientLoginView import ClientLoginView
 
