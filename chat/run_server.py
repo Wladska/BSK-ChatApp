@@ -1,4 +1,8 @@
 from Server import *
 
-if __name__ == '__main__':
+
+def main():
     startServer('', 9090)
+
+if __name__ == '__main__':
+    main()

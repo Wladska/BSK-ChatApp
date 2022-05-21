@@ -1,24 +1,14 @@
-import socket
 from gui.styles import *
 from tkinter import *
 from fileupload.fileuploader import *
-import threading
 
 
-class Client:
-    def __init__(self, serverAddr, serverPort, clientName, window):
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print("Socket successfully created")
-
-        self.clientName = clientName
-        self.serverAddr = serverAddr
-        self.serverPort = serverPort
-
-        self.s.connect((self.serverAddr, self.serverPort))
-        print(f"Connected to server {self.serverAddr}:{self.serverPort}")
-
+class ClientChatView:
+    def __init__(self, window, clientName, controller):
         self.rootWindow = window
         self.username = clientName
+
+        self.controller = controller
 
         self.rootWindow.deiconify()
         self.rootWindow.title("BSK-ChatApp")
@@ -72,7 +62,7 @@ class Client:
         self.sendButton = CustomButton(self.bottomLabel,
                                        text="Send",
                                        width=20,
-                                       command=lambda: self.sendMessage(self.messageEntry.get()))
+                                       command=lambda: self.controller.sendMessage(self.messageEntry.get()))
 
         self.sendButton.place(relx=0.77,
                               rely=0.008,
@@ -101,46 +91,16 @@ class Client:
 
         self.textCons.config(state=DISABLED)
 
-        # function to basically start the thread for sending messages
-        thread = threading.Thread(target=self.receiveMessages, args=())
-        thread.start()
-
     def addFileButtonOnClick(self):
         FileUploader()
+    
+    def addController(self, controller):
+        self.controller = controller
+    
+    def displayMessage(self, message):
+        # insert messages to text box
+        self.textCons.config(state=NORMAL)
+        self.textCons.insert(END,message + "\n\n")
 
-        # function to basically start the thread for sending messages
-
-    # def sendButtonOnClick(self, msg):
-    #     return 1
-
-    def receiveMessages(self):
-        while True:
-            try:
-                message = self.s.recv(1024).decode()
-
-                # if the messages from the server is NAME send the client's name
-                if message == 'NAME':
-                    self.s.send(self.clientName.encode())
-                else:
-                    # insert messages to text box
-                    self.textCons.config(state=NORMAL)
-                    self.textCons.insert(END,
-                                         message + "\n\n")
-
-                    self.textCons.config(state=DISABLED)
-                    self.textCons.see(END)
-            except:
-                # an error will be printed on the command line or console if there's an error
-                print("An error occured!")
-                self.s.close()
-                break
-
-    def sendMessage(self, msg):
         self.textCons.config(state=DISABLED)
-        while True:
-            message = f"{self.clientName}: {msg}"
-            self.s.send(message.encode())
-            break
-
-def startClient(serverAddr, serverPort, username, window):
-    client = Client(serverAddr, serverPort, username, window)
+        self.textCons.see(END)

@@ -1,7 +1,17 @@
-from gui.login_gui import *
+from tkinter import *
+from client.Client import *
 
-# root of the application
+
+def main():
+    pass
+
+
 if __name__ == '__main__':
+    # mainWindow = Tk()
+    # LoginWidget(mainWindow)
+    # mainWindow.mainloop()
     mainWindow = Tk()
-    LoginWidget(mainWindow)
+    client = Client(mainWindow)
+    client.start()
     mainWindow.mainloop()
+    # main()
