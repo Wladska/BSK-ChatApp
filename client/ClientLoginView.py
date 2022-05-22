@@ -1,13 +1,15 @@
-from gui.styles import *
+from styles.styles import *
 
 
 class ClientLoginView:
-    def __init__(self, client):
+    def __init__(self, client, rootWindow):
         self.client = client
-        
-        self.client.getWindow().withdraw()
+        self.rootWindow = rootWindow
+
+        self.rootWindow.withdraw()
         
         self.loginWindow = Toplevel()
+        self.loginWindow.protocol("WM_DELETE_WINDOW", self.rootWindow.destroy)
         self.loginWindow.title("Login")
         self.loginWindow.resizable(width = False, height = False)
         self.loginWindow.configure(width = 400, height = 300, background=dark_blue)
@@ -48,7 +50,7 @@ class ClientLoginView:
         self.pswdField.focus()
 
         # TODO password is currrently not passed to the function we may change that a bit later 
-        self.loginWindow.bind('<Return>', (lambda event:self.saveUserInput(self.usernameField.get(), self.pswdField.get())))
+        self.loginWindow.bind('<Return>', (lambda event : self.saveUserInput(self.usernameField.get(), self.pswdField.get())))
         self.loginButton = CustomButton(self.loginWindow,
                          text = "Log in",
                          width = 25,

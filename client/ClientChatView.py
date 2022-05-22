@@ -1,5 +1,5 @@
-from gui.styles import *
 from tkinter import *
+from styles.styles import *
 from fileupload.fileuploader import *
 
 
@@ -10,6 +10,7 @@ class ClientChatView:
 
         self.controller = controller
 
+        self.rootWindow.protocol("WM_DELETE_WINDOW", self.controller.stopCommunication)
         self.rootWindow.deiconify()
         self.rootWindow.title("BSK-ChatApp")
         self.rootWindow.resizable(width=False,
@@ -59,6 +60,7 @@ class ClientChatView:
         self.messageEntry.focus()
 
         # Send Button
+        self.rootWindow.bind('<Return>', (lambda event : self.sendMessage(self.messageEntry.get())))
         self.sendButton = CustomButton(self.bottomLabel,
                                        text="Send",
                                        width=20,
@@ -94,8 +96,8 @@ class ClientChatView:
     def addFileButtonOnClick(self):
         FileUploader()
     
-    def addController(self, controller):
-        self.controller = controller
+    # def addController(self, controller):
+    #     self.controller = controller
     
     def displayMessage(self, message):
         # insert messages to text box
@@ -104,3 +106,7 @@ class ClientChatView:
 
         self.textCons.config(state=DISABLED)
         self.textCons.see(END)
+    
+    def sendMessage(self, message):
+        self.messageEntry.delete(0, 'end')
+        self.controller.sendMessage(message)

@@ -3,7 +3,9 @@ from client.Client import *
 
 
 if __name__ == '__main__':
-    mainWindow = Tk()
-    client = Client(mainWindow)
+    rootWindow = Tk()
+
+    client = Client(rootWindow)
     client.start()
-    mainWindow.mainloop()
+    
+    rootWindow.mainloop()

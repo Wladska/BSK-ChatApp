@@ -1,8 +1,7 @@
 import socket
-from gui.styles import *
-from tkinter import *
-from fileupload.fileuploader import *
 import threading
+from tkinter import *
+from styles.styles import *
 
 SERVER = "192.168.1.100"
 PORT = 9090
@@ -17,33 +16,42 @@ class ClientNetworkController:
         self.serverAddr = SERVER
         self.serverPort = PORT
         self.view = None
+        self.running = True
 
         self.s.connect((self.serverAddr, self.serverPort))
         print(f"Connected to server {self.serverAddr}:{self.serverPort}")
 
     def startCommunication(self):
         # function to basically start the thread for sending messages
-        thread = threading.Thread(target=self.receiveMessages, args=())
-        thread.start()
+        self.thread = threading.Thread(target=self.receiveMessages, args=())
+        self.thread.start()
+
+    def stopCommunication(self):
+        # send close connection command to server (for that client)
+        self.s.send("!CLOSE".encode())
+
+        # close connection
+        self.running = False
+        self.s.close()
+        print("Disconnecting...")
+        self.view.rootWindow.destroy()
 
     def receiveMessages(self):
         if self.view is None:
             print("Chat view isn't assigned!")
             return
-        
-        while True:
+
+        while self.running:
             try:
                 message = self.s.recv(1024).decode()
 
-                # if the messages from the server is NAME send the client's name
-                if message == 'NAME':
-                    self.s.send(self.clientName.encode())
-                else:
-                    self.view.displayMessage(message)
+                self.view.displayMessage(message)
+                # print(message)
             except:
                 # an error will be printed on the command line or console if there's an error
-                print("An error occured!")
-                self.s.close()
+                # print("An error occured!")
+                # self.s.close()
+                # self.stopCommunication()
                 break
 
     def sendMessage(self, msg):
@@ -51,7 +59,6 @@ class ClientNetworkController:
             print("Chat view isn't assigned!")
             return
         
-        self.view.textCons.config(state=DISABLED)
         while True:
             message = f"{self.clientName}: {msg}"
             self.s.send(message.encode())

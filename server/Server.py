@@ -33,18 +33,21 @@ class Server:
             # receive message
             message = conn.recv(1024)
 
+            if message.decode() == "!CLOSE":
+                # close the connection
+                conn.close()
+                self.clients.remove((conn, addr))
+                connected = False
+                print(f"Client {addr} disconnected!")
+                break
+
             # broadcast message
             self.broadcastMessage(message)
-
-        # close the connection
-        conn.close()
-        # print(f"client #{addr[1]}: ")
-        # pass
-        # conn.close()
 
     def broadcastMessage(self, message):
         for client in self.clients:
             client[0].send(message)
+            # print(f"sending message to client {client[1]}")
 
 def startServer(addr, port):
     server = Server(addr, port)

@@ -6,7 +6,7 @@ from client.ClientLoginView import ClientLoginView
 
 class Client:
     def __init__(self, window):
-        self.window = window
+        self.rootWindow = window
 
         self.name = ""
         self.password = ""
@@ -15,17 +15,16 @@ class Client:
         self.displayLoginGUI()
 
     def displayLoginGUI(self):
-        ClientLoginView(self)
+        ClientLoginView(self, self.rootWindow)
     
     def startMainApp(self, name, password):
         self.name = name
         self.password = password
 
         self.controller = ClientNetworkController(self.name)
-        self.chatView = ClientChatView(self.window, self.name, self.controller)
+        self.chatView = ClientChatView(self.rootWindow, self.name, self.controller)
 
         self.controller.addView(self.chatView)
-        # self.chatView.addController(self.controller)
 
         self.controller.startCommunication()
     
@@ -39,4 +38,4 @@ class Client:
         self.password = password
     
     def getWindow(self):
-        return self.window
+        return self.rootWindow
