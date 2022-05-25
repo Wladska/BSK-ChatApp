@@ -3,9 +3,9 @@ from tkinter import filedialog
 
 class FileUploader:
     def __init__(self):
+        # TODO unlock to allow any file formats
         filetypes = (
             ('Text files', '*.txt'),
-            ('Text files', "*.png"),
             ('Images', '*.png*'),
             ('Videos', '*.avi*'),
         )
