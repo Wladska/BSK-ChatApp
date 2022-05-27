@@ -1,5 +1,4 @@
 from tkinter import *
-from turtle import color
 
 # Colour palette
 white = "#D3DCF1"
@@ -59,10 +58,10 @@ def MessageConsole(window, config={}, **kw):
 
 # Text fields
 def TextField(window, config={}, **kw):
-    return Entry(window, config, bg = gray, fg = white, font = fontFam + " 14", **kw)
+    return Entry(window, config, bg = gray, fg = white, insertbackground=blue, font = fontFam + " 14", **kw)
 
 def MultiLineTextFiled(window, config={}, **kw):
-    return Entry(window, config, bg = gray, fg = white, font = fontFam + " 14", **kw)
+    return Entry(window, config, bg = gray, fg = white, insertbackground=blue, font = fontFam + " 14", **kw)
 
 # Buttons
 def CustomButton(window, config={}, **kw):
