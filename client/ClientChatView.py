@@ -9,6 +9,8 @@ class ClientChatView:
         "CBC"
     ] #etc
 
+    filepath = ""
+
     def __init__(self, window, clientName, controller):
         self.rootWindow = window
         self.username = clientName
@@ -111,7 +113,9 @@ class ClientChatView:
         self.textCons.config(state=DISABLED)
 
     def addFileButtonOnClick(self):
-        FileUploader()
+        uploader = FileUploader()
+        self.filepath = uploader.file.name
+        print(self.filepath)
     
     # def addController(self, controller):
     #     self.controller = controller
@@ -128,4 +132,8 @@ class ClientChatView:
         # self.cipherPicker.get() # get the dropdown list value
         # print(self.cipherPicker.get()) # debugging
         self.messageEntry.delete(0, 'end')
-        self.controller.sendMessage(message)
+        if self.filepath:
+            self.controller.sendFile(self.filepath)
+            self.filepath = ""
+        else:
+            self.controller.sendMessage(message)

@@ -1,6 +1,10 @@
 import socket
 import threading
+import os
 
+# receive 4096 bytes each time
+BUFFER_SIZE = 4096
+SEPARATOR = "<SEPARATOR>"
 
 class Server:
     def __init__(self, addr, port):
@@ -31,7 +35,7 @@ class Server:
 
         while connected:
             # receive message
-            message = conn.recv(1024)
+            message = conn.recv(BUFFER_SIZE)
 
             if message.decode() == "!CLOSE":
                 # close the connection
