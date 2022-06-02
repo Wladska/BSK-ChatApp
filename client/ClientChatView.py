@@ -4,6 +4,11 @@ from fileupload.fileuploader import *
 
 
 class ClientChatView:
+    OPTIONS = [
+        "ECB",
+        "CBC"
+    ] #etc
+
     def __init__(self, window, clientName, controller):
         self.rootWindow = window
         self.username = clientName
@@ -46,14 +51,14 @@ class ClientChatView:
                                  height=80)
 
         self.bottomLabel.place(relwidth=1,
-                               rely=0.825)
+                               rely=0.75)
 
         self.messageEntry = MultiLineTextFiled(self.bottomLabel)
 
         # place the given widget
         # into the gui window
         self.messageEntry.place(relwidth=0.74,
-                                relheight=0.06,
+                                relheight=0.1,
                                 rely=0.008,
                                 relx=0.011)
 
@@ -83,6 +88,18 @@ class ClientChatView:
 
         self.textCons.config(cursor="arrow")
 
+        #cipher drop down menu
+        self.cipherPicker = StringVar(self.bottomLabel)
+        self.cipherPicker.set(self.OPTIONS[0]) # default value
+
+        w = OptionMenu(self.bottomLabel, self.cipherPicker, *self.OPTIONS)
+        w.config(bg=gray, fg=white)
+        w["menu"].config(bg=gray, fg=white)
+        w.place(relx=0.77,
+                 rely=0.072,
+                 relheight=0.03,
+                 relwidth=0.22)
+
         # create a scroll bar
         scrollbar = Scrollbar(self.textCons)
 
@@ -108,5 +125,7 @@ class ClientChatView:
         self.textCons.see(END)
     
     def sendMessage(self, message):
+        # self.cipherPicker.get() # get the dropdown list value
+        # print(self.cipherPicker.get()) # debugging
         self.messageEntry.delete(0, 'end')
         self.controller.sendMessage(message)
