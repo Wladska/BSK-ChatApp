@@ -1,6 +1,5 @@
 import socket
 import threading
-from tkinter import *
 from styles.styles import *
 import tqdm
 import os
@@ -8,7 +7,7 @@ import os
 SERVER = "172.18.176.1" # "192.168.178.25"
 PORT = 9090
 SEPARATOR = "<SEPARATOR>"
-BUFFER_SIZE = 4096 # send 4096 bytes each time step
+BUFFER_SIZE = 1024 # send 1024 bytes each time step
 
 
 class ClientNetworkController:
@@ -26,9 +25,9 @@ class ClientNetworkController:
         print(f"Connected to server {self.serverAddr}:{self.serverPort}")
 
     def startCommunication(self):
-        # function to basically start the thread for sending messages
-        self.thread = threading.Thread(target=self.receiveMessages, args=())
-        self.thread.start()
+        # function to basically start the thread for receiving messages
+        self.receivingThread = threading.Thread(target=self.receiveMessages, args=())
+        self.receivingThread.start()
 
     def stopCommunication(self):
         # send close connection command to server (for that client)
