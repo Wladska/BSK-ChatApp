@@ -123,7 +123,14 @@ class ClientChatView:
     def displayMessage(self, message):
         # insert messages to text box
         self.textCons.config(state=NORMAL)
-        self.textCons.insert(END,message + "\n\n")
+        self.textCons.insert(END, "\n" + message + "\n")
+
+        self.textCons.config(state=DISABLED)
+        self.textCons.see(END)
+
+    def displayAcknowledgement(self, user):
+        self.textCons.config(state=NORMAL)
+        self.textCons.insert(END, user + " ")
 
         self.textCons.config(state=DISABLED)
         self.textCons.see(END)

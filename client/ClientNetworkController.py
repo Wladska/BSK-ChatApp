@@ -7,6 +7,7 @@ import os
 SERVER = "172.18.176.1" # "192.168.178.25"
 PORT = 9090
 SEPARATOR = "<SEPARATOR>"
+ACKNOWLEDGEMENT = "<ACKNOWLEDGEMENT>"
 BUFFER_SIZE = 1024 # send 1024 bytes each time step
 
 
@@ -64,7 +65,12 @@ class ClientNetworkController:
                             if filesize <= 0:
                                 break
                     message = user + ": Transferred " + filename
-                self.view.displayMessage(message)
+                if ACKNOWLEDGEMENT not in message:
+                    self.view.displayMessage(message)
+                    self.sendAcknowledgement()
+                else:
+                    _, user = message.split(ACKNOWLEDGEMENT)
+                    self.view.displayAcknowledgement(user)
             except:
                 print("An error occured!")
                 self.s.close()
@@ -77,6 +83,14 @@ class ClientNetworkController:
             return
 
         message = f"{self.clientName}: {msg}"
+        self.s.send(message.encode())
+
+    def sendAcknowledgement(self):
+        if self.view is None:
+            print("Chat view isn't assigned!")
+            return
+
+        message = f"{ACKNOWLEDGEMENT}{self.clientName}"
         self.s.send(message.encode())
 
     def sendFile(self, path):
