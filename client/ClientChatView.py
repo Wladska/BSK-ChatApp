@@ -1,4 +1,3 @@
-from tkinter import *
 from styles.styles import *
 from fileupload.fileuploader import *
 

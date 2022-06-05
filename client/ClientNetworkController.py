@@ -1,6 +1,7 @@
 import socket
 import threading
 from styles.styles import *
+from tkinter import ttk
 import tqdm
 import os
 
@@ -102,7 +103,15 @@ class ClientNetworkController:
         # send the filename and filesize
         self.s.send(f"{path}{SEPARATOR}{filesize}{SEPARATOR}{self.clientName}".encode())
         # start sending the file
-        progress = tqdm.tqdm(range(filesize), f"Sending {path}", unit="B", unit_scale=True, unit_divisor=BUFFER_SIZE)
+        progress = tqdm.tqdm(range(filesize), f"Sending {os.path.basename(path)}", unit="B", unit_scale=True, unit_divisor=BUFFER_SIZE)
+        progressBarPopup = Toplevel()
+        progressBarPopup.geometry('50x80')
+        Label(progressBarPopup, text="Files are being sent").grid(row=0, column=0)
+        barProgress = 0
+        progress_var = DoubleVar()
+        progress_bar = ttk.Progressbar(progressBarPopup, variable=progress_var, maximum=int(filesize))
+        progress_bar.grid(row=1, column=0)
+        progressBarPopup.pack_slaves()
         with open(path, "rb") as f:
             while True:
                 bytes_read = f.read(BUFFER_SIZE)
@@ -110,6 +119,9 @@ class ClientNetworkController:
                     break
                 self.s.send(bytes_read)
                 progress.update(len(bytes_read))
+                progressBarPopup.update()
+                barProgress += BUFFER_SIZE
+                progress_var.set(barProgress)
 
     def addView(self, view):
         self.view = view
