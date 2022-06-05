@@ -59,8 +59,8 @@ class ClientNetworkController:
                         while True:
                             bytes_read = self.s.recv(BUFFER_SIZE)
                             f.write(bytes_read)
-                            progress.update(len(bytes_read))
                             filesize = filesize - len(bytes_read)
+                            progress.update(len(bytes_read))
                             if filesize <= 0:
                                 break
                     message = user + ": Transferred " + filename
@@ -91,13 +91,10 @@ class ClientNetworkController:
         progress = tqdm.tqdm(range(filesize), f"Sending {path}", unit="B", unit_scale=True, unit_divisor=BUFFER_SIZE)
         with open(path, "rb") as f:
             while True:
-                # read the bytes from the file
                 bytes_read = f.read(BUFFER_SIZE)
                 if not bytes_read:
-                    # file transmitting is done
                     break
                 self.s.send(bytes_read)
-                # update the progress bar
                 progress.update(len(bytes_read))
 
     def addView(self, view):

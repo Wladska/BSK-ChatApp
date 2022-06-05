@@ -7,6 +7,7 @@ class FileUploader:
         filetypes = (
             ('Text files', '*.txt'),
             ('Images', '*.png*'),
+            ('Zip files', '*.zip'),
             ('Videos', '*.avi*'),
         )
 
