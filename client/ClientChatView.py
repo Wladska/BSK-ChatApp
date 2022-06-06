@@ -1,4 +1,3 @@
-from tkinter import *
 from styles.styles import *
 from fileupload.fileuploader import *
 
@@ -8,6 +7,8 @@ class ClientChatView:
         "ECB",
         "CBC"
     ] #etc
+
+    filepath = ""
 
     def __init__(self, window, clientName, controller):
         self.rootWindow = window
@@ -111,7 +112,9 @@ class ClientChatView:
         self.textCons.config(state=DISABLED)
 
     def addFileButtonOnClick(self):
-        FileUploader()
+        uploader = FileUploader()
+        self.filepath = uploader.file.name
+        print(self.filepath)
     
     # def addController(self, controller):
     #     self.controller = controller
@@ -119,7 +122,14 @@ class ClientChatView:
     def displayMessage(self, message):
         # insert messages to text box
         self.textCons.config(state=NORMAL)
-        self.textCons.insert(END,message + "\n\n")
+        self.textCons.insert(END, "\n" + message + "\n")
+
+        self.textCons.config(state=DISABLED)
+        self.textCons.see(END)
+
+    def displayAcknowledgement(self, user):
+        self.textCons.config(state=NORMAL)
+        self.textCons.insert(END, user + " ")
 
         self.textCons.config(state=DISABLED)
         self.textCons.see(END)
@@ -128,4 +138,8 @@ class ClientChatView:
         # self.cipherPicker.get() # get the dropdown list value
         # print(self.cipherPicker.get()) # debugging
         self.messageEntry.delete(0, 'end')
-        self.controller.sendMessage(message)
+        if self.filepath:
+            self.controller.sendFile(self.filepath)
+            self.filepath = ""
+        else:
+            self.controller.sendMessage(message)

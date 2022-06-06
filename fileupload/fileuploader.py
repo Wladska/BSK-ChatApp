@@ -7,6 +7,7 @@ class FileUploader:
         filetypes = (
             ('Text files', '*.txt'),
             ('Images', '*.png*'),
+            ('Zip files', '*.zip'),
             ('Videos', '*.avi*'),
         )
 
@@ -15,8 +16,3 @@ class FileUploader:
             initialdir='/',
             mode = 'r',
             filetypes=filetypes)
-
-        if self.file:
-            content = self.file.read()
-            self.file.close()
-            print("%d characters in this file" % len(content))

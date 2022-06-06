@@ -1,6 +1,8 @@
 import socket
 import threading
 
+BUFFER_SIZE = 1024
+SEPARATOR = "<SEPARATOR>"
 
 class Server:
     def __init__(self, addr, port):
@@ -31,8 +33,8 @@ class Server:
 
         while connected:
             # receive message
-            message = conn.recv(1024)
-
+            message = conn.recv(BUFFER_SIZE)
+            packets = []
             if message.decode() == "!CLOSE":
                 # close the connection
                 conn.close()
@@ -40,9 +42,19 @@ class Server:
                 connected = False
                 print(f"Client {addr} disconnected!")
                 break
-
+            if SEPARATOR in message.decode():
+                filename, filesize, user = message.decode().split(SEPARATOR)
+                filesize = int(filesize)
+                while True:
+                    bytes_read = conn.recv(BUFFER_SIZE)
+                    packets.append(bytes_read)
+                    filesize = filesize - len(bytes_read)
+                    if filesize <= 0:
+                        break
             # broadcast message
             self.broadcastMessage(message)
+            for packet in packets:
+                self.broadcastMessage(packet)
 
     def broadcastMessage(self, message):
         for client in self.clients:
