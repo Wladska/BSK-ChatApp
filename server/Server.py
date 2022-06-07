@@ -28,8 +28,6 @@ class Server:
             self.clients.append((conn, addr))
             print(f"New connection from {addr}")
 
-
-
     def handleClient(self, conn, addr):
         connected = True
         default_size = len(Frame(FrameType.SIZE, struct.pack('I', 420)).serialize())

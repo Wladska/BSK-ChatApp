@@ -34,7 +34,11 @@ class ClientNetworkController:
         self.receivingThread = threading.Thread(target=self.receiveMessages, args=())
         self.receivingThread.start()
 
-        # self.publishPublicKey()
+        self.publishPublicKey()
+        self.requestPublicKey()
+
+    def requestPublicKey(self):
+        self.sendFrame(Frame(FrameType.HELLO_REQ, "", user=self.clientName))
 
     def publishPublicKey(self):
         _, publicKey = self.keyController.getKeys()
@@ -81,11 +85,19 @@ class ClientNetworkController:
                         os.makedirs(uploadDir)
                     with open(uploadDir + "\\" + recvFrame.fileName, "a+b") as f:
                         f.write(recvFrame.data)
+                elif recvFrame.type == FrameType.HELLO_REQ:
+                    if recvFrame.user != self.clientName:
+                        print(f"received a hello request from {recvFrame.user}, sending my hello")
+                        self.publishPublicKey()
+                    else:
+                        print("received my own hello request frame")
                 elif recvFrame.type == FrameType.HELLO:
                     if recvFrame.user != self.clientName:
                         self.recipientPublicKey = recvFrame.data
                         self.recipientName = recvFrame.user
                         print(f"{self.recipientName} introduced themselves with {self.recipientPublicKey} key")
+                    else:
+                        print("received my own hello frame")
             except:
                 print("An error occured!")
                 self.s.close()

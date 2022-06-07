@@ -9,8 +9,8 @@ def generateKeyPair():
     private = key.export_key()
     public = key.public_key().export_key()
 
-    print(private)
-    print(public)
+    # print(private)
+    # print(public)
 
     return private, public
 

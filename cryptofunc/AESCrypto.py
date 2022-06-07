@@ -11,7 +11,7 @@ def encrypt(data, key, iv, mode="CBC"):
 
     encrypted = cipher.encrypt(pad(data, AES.block_size))
 
-    print(f"encrypted: {encrypted}")
+    # print(f"encrypted: {encrypted}")
 
     return encrypted
 
@@ -29,6 +29,6 @@ def decrypt(data, key, iv, mode="CBC"):
         decrypted = cipher.decrypt(data)
         print("Wrong key & iv!")
 
-    print(f"decrypted: {decrypted}")
+    # print(f"decrypted: {decrypted}")
 
     return decrypted
