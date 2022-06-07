@@ -6,21 +6,25 @@ import tqdm
 import os
 from frame.Frame import *
 import struct
+from client.ClientKeyController import ClientKeyController
 
-SERVER = "172.18.176.1" # "192.168.178.25"
+SERVER = "192.168.1.100" # "192.168.178.25"
 PORT = 9090
 
 
 class ClientNetworkController:
-    def __init__(self, clientName):
+    def __init__(self, clientName, keyController: ClientKeyController):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print("Socket successfully created")
 
         self.clientName = clientName
+        self.keyController = keyController
         self.serverAddr = SERVER
         self.serverPort = PORT
         self.view = None
         self.running = True
+        self.recipientPublicKey = None
+        self.recipientName = ""
 
         self.s.connect((self.serverAddr, self.serverPort))
         print(f"Connected to server {self.serverAddr}:{self.serverPort}")
@@ -29,6 +33,12 @@ class ClientNetworkController:
         # function to basically start the thread for receiving messages
         self.receivingThread = threading.Thread(target=self.receiveMessages, args=())
         self.receivingThread.start()
+
+        # self.publishPublicKey()
+
+    def publishPublicKey(self):
+        _, publicKey = self.keyController.getKeys()
+        self.sendFrame(Frame(FrameType.HELLO, publicKey, user=self.clientName))
 
     def stopCommunication(self):
         # send close connection command to server (for that client)
@@ -71,6 +81,11 @@ class ClientNetworkController:
                         os.makedirs(uploadDir)
                     with open(uploadDir + "\\" + recvFrame.fileName, "a+b") as f:
                         f.write(recvFrame.data)
+                elif recvFrame.type == FrameType.HELLO:
+                    if recvFrame.user != self.clientName:
+                        self.recipientPublicKey = recvFrame.data
+                        self.recipientName = recvFrame.user
+                        print(f"{self.recipientName} introduced themselves with {self.recipientPublicKey} key")
             except:
                 print("An error occured!")
                 self.s.close()
