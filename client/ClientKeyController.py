@@ -1,5 +1,7 @@
 from os import path, makedirs
 import cryptofunc.RSACrypto as RSACrypto
+import cryptofunc.AESCrypto as AESCrypto
+import cryptofunc.SessionKeyCrypto as SessionKeyCrypto
 
 KEYS_PATH = "keys\\"
 PRIVATE_KEY_PATH = "\\private\\"
@@ -14,6 +16,8 @@ class ClientKeyController:
         self.keyPath = KEYS_PATH + name
         self.privateKeyPath = self.keyPath + PRIVATE_KEY_PATH
         self.publicKeyPath = self.keyPath + PUBLIC_KEY_PATH
+
+        self.receivedSessionKey = None
 
     def getKeys(self):
         hashed = RSACrypto.generateHash(self.password)
@@ -33,3 +37,22 @@ class ClientKeyController:
             public = RSACrypto.getKey(hashed, self.publicKeyPath)
 
             return private, public
+
+    def generateSessionKey(self, length):
+        return SessionKeyCrypto.generate(length)
+
+    def encryptSessionKey(self, sessionKey, encryptionKey):
+        return RSACrypto.encrypt(sessionKey, encryptionKey)
+
+    def decryptSessionKey(self, sessionKey, decryptionKey):
+        return RSACrypto.decrypt(sessionKey, decryptionKey)
+
+    def encryptData(self, data, key, iv, mode):
+        encryptedData = AESCrypto.encrypt(data, key, iv, mode)
+
+        return encryptedData
+
+    def decryptData(self, data, key, iv, mode):
+        decryptedData = AESCrypto.decrypt(data, key, iv, mode)
+
+        return decryptedData

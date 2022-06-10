@@ -25,6 +25,7 @@ class ClientNetworkController:
         self.running = True
         self.recipientPublicKey = None
         self.recipientName = ""
+        self.cipherMode = "ECB"
 
         self.s.connect((self.serverAddr, self.serverPort))
         print(f"Connected to server {self.serverAddr}:{self.serverPort}")
@@ -68,6 +69,11 @@ class ClientNetworkController:
                 recvFrame = pickle.loads(message)
                 size = default_size
 
+                frameType = recvFrame.type
+                if frameType == FrameType.MSG or frameType == FrameType.FILE or frameType == FrameType.FILE_END:
+                    sessionKey = self.keyController.receivedSessionKey
+                    recvFrame.data = self.keyController.decryptData(recvFrame.data, sessionKey[0:16], sessionKey[16:32], self.cipherMode)
+
                 if recvFrame.type == FrameType.SIZE:
                     size = struct.unpack('I', recvFrame.data)
                     size = size[0]
@@ -98,6 +104,10 @@ class ClientNetworkController:
                         print(f"{self.recipientName} introduced themselves with {self.recipientPublicKey} key")
                     else:
                         print("received my own hello frame")
+                elif recvFrame.type == FrameType.SESSION_KEY:
+                    if recvFrame.user != self.clientName:
+                        private, _ = self.keyController.getKeys()
+                        self.keyController.receivedSessionKey = self.keyController.decryptSessionKey(recvFrame.data, private)
             except:
                 print("An error occured!")
                 self.s.close()
@@ -147,11 +157,30 @@ class ClientNetworkController:
                 progress_var.set(barProgress)
         self.sendFrame(Frame(FrameType.FILE_END, b"", self.clientName, os.path.basename(path)))
 
+    def sendSessionKey(self, sessionKeyLength):
+        sessionKey = self.keyController.generateSessionKey(sessionKeyLength)
+        encryptedSessionKey = self.keyController.encryptSessionKey(sessionKey, self.recipientPublicKey)
+
+        sessionKeyFrame = Frame(FrameType.SESSION_KEY, encryptedSessionKey, self.clientName).serialize()
+        sessionKeySizeFrame = Frame(FrameType.SIZE, struct.pack('I', len(sessionKeyFrame))).serialize()
+        self.s.sendall(sessionKeySizeFrame)
+        self.s.sendall(sessionKeyFrame)
+
+        return sessionKey
+
     def sendFrame(self, frame):
+        if frame.type == FrameType.MSG or frame.type == FrameType.FILE or frame.type == FrameType.FILE_END:
+            sessionKey = self.sendSessionKey(32)
+
+            encryptedData = self.keyController.encryptData(frame.data, sessionKey[0:16], sessionKey[16:32], self.cipherMode)
+            frame.data = encryptedData
+            print("data has been encrypted")
+
         serialized = frame.serialize()
         sizeFrame = Frame(FrameType.SIZE, struct.pack('I', len(serialized)))
         self.s.sendall(sizeFrame.serialize())
         self.s.sendall(serialized)
+        print("data has been sent")
 
     def addView(self, view):
         self.view = view

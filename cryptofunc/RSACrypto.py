@@ -1,3 +1,4 @@
+from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 import hashlib
 import cryptofunc.AESCrypto as AESCrypto
@@ -38,3 +39,19 @@ def getKey(hashed, path):
     with open(path+"key", "r+b") as f:
         data = f.read()
         return AESCrypto.decrypt(data, aesKey, aesIV)
+
+
+def encrypt(data, key):
+    rsaKey = RSA.import_key(key)
+    cipher = PKCS1_OAEP.new(rsaKey)
+    encrypted = cipher.encrypt(data)
+
+    return encrypted
+
+
+def decrypt(data, key):
+    rsaKey = RSA.import_key(key)
+    cipher = PKCS1_OAEP.new(rsaKey)
+    decrypted = cipher.decrypt(data)
+
+    return decrypted

@@ -135,6 +135,7 @@ class ClientChatView:
         self.textCons.see(END)
     
     def sendMessage(self, message):
+        self.controller.cipherMode = self.cipherPicker.get()
         # self.cipherPicker.get() # get the dropdown list value
         # print(self.cipherPicker.get()) # debugging
         self.messageEntry.delete(0, 'end')

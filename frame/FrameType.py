@@ -8,6 +8,7 @@ class FrameType(Enum):
     SIZE = auto()
     HELLO = auto()
     HELLO_REQ = auto()
+    SESSION_KEY = auto()
     ACK = auto()
     MSG = auto()
     FILE = auto()
