@@ -47,10 +47,11 @@ class ClientNetworkController:
 
     def stopCommunication(self):
         # send close connection command to server (for that client)
-        self.sendFrame(Frame(FrameType.CLOSE, ""))
+        self.sendFrame(Frame(FrameType.CLOSE, "", user=self.clientName))
+        self.running = False
 
         # close connection
-        self.running = False
+        self.s.shutdown(socket.SHUT_WR)
         self.s.close()
         print("Disconnecting...")
         self.view.rootWindow.destroy()
@@ -71,8 +72,12 @@ class ClientNetworkController:
 
                 frameType = recvFrame.type
                 if frameType == FrameType.MSG or frameType == FrameType.FILE or frameType == FrameType.FILE_END:
-                    sessionKey = self.keyController.receivedSessionKey
-                    recvFrame.data = self.keyController.decryptData(recvFrame.data, sessionKey[0:16], sessionKey[16:32], self.cipherMode)
+                    self.cipherMode = recvFrame.mode
+                    sessionKey = self.keyController.lastSessionKey
+                    try:
+                        recvFrame.data = self.keyController.decryptData(recvFrame.data, sessionKey, self.cipherMode)
+                    except:
+                        pass
 
                 if recvFrame.type == FrameType.SIZE:
                     size = struct.unpack('I', recvFrame.data)
@@ -83,7 +88,10 @@ class ClientNetworkController:
                     self.view.displayMessage(f"{recvFrame.user}:Sent {recvFrame.fileName}")
                     self.sendAcknowledgement()
                 elif recvFrame.type == FrameType.MSG:
-                    self.view.displayMessage(f"{recvFrame.user}:{recvFrame.data}")
+                    try:
+                        self.view.displayMessage(f"{recvFrame.user}:{recvFrame.data.decode('utf-8')}")
+                    except UnicodeDecodeError:
+                        self.view.displayMessage(f"{recvFrame.user}:{recvFrame.data}")
                     self.sendAcknowledgement()
                 elif recvFrame.type == FrameType.FILE:
                     uploadDir = "downloads\\" + self.clientName
@@ -93,25 +101,29 @@ class ClientNetworkController:
                         f.write(recvFrame.data)
                 elif recvFrame.type == FrameType.HELLO_REQ:
                     if recvFrame.user != self.clientName:
-                        print(f"received a hello request from {recvFrame.user}, sending my hello")
+                        # print(f"received a hello request from {recvFrame.user}, sending my hello")
                         self.publishPublicKey()
                     else:
-                        print("received my own hello request frame")
+                        # print("received my own hello request frame")
+                        pass
                 elif recvFrame.type == FrameType.HELLO:
                     if recvFrame.user != self.clientName:
                         self.recipientPublicKey = recvFrame.data
                         self.recipientName = recvFrame.user
-                        print(f"{self.recipientName} introduced themselves with {self.recipientPublicKey} key")
+                        # print(f"{self.recipientName} introduced themselves with {self.recipientPublicKey} key")
                     else:
-                        print("received my own hello frame")
+                        # print("received my own hello frame")
+                        pass
                 elif recvFrame.type == FrameType.SESSION_KEY:
                     if recvFrame.user != self.clientName:
                         private, _ = self.keyController.getKeys()
-                        self.keyController.receivedSessionKey = self.keyController.decryptSessionKey(recvFrame.data, private)
+                        self.keyController.lastSessionKey = self.keyController.decryptSessionKey(recvFrame.data, private)
+                        print(f"received session key from {recvFrame.user}")
             except:
-                print("An error occured!")
-                self.s.close()
-                self.stopCommunication()
+                try:
+                    self.stopCommunication()
+                except OSError:
+                    print("An error occurred!")
                 break
 
     def sendMessage(self, msg):
@@ -119,7 +131,7 @@ class ClientNetworkController:
             print("Chat view isn't assigned!")
             return
 
-        self.sendFrame(Frame(FrameType.MSG, msg, self.clientName))
+        self.sendFrame(Frame(FrameType.MSG, msg, self.clientName, mode=self.cipherMode))
 
     def sendAcknowledgement(self):
         if self.view is None:
@@ -133,7 +145,7 @@ class ClientNetworkController:
             print("Chat view isn't assigned!")
             return
         filesize = os.path.getsize(path)
-        self.sendFrame(Frame(FrameType.FILE, b"", self.clientName, os.path.basename(path)))
+        self.sendFrame(Frame(FrameType.FILE, b"", self.clientName, os.path.basename(path), mode=self.cipherMode))
         # start sending the file
         progress = tqdm.tqdm(range(filesize), f"Sending {os.path.basename(path)}", unit="B", unit_scale=True, unit_divisor=BUFFER_SIZE)
         progressBarPopup = Toplevel()
@@ -150,21 +162,19 @@ class ClientNetworkController:
                 if not bytes_read:
                     break
 
-                self.sendFrame(Frame(FrameType.FILE, bytes_read, self.clientName, os.path.basename(path)))
+                self.sendFrame(Frame(FrameType.FILE, bytes_read, self.clientName, os.path.basename(path), mode=self.cipherMode))
                 progress.update(len(bytes_read))
                 progressBarPopup.update()
                 barProgress += BUFFER_SIZE
                 progress_var.set(barProgress)
-        self.sendFrame(Frame(FrameType.FILE_END, b"", self.clientName, os.path.basename(path)))
+        self.sendFrame(Frame(FrameType.FILE_END, b"", self.clientName, os.path.basename(path), mode=self.cipherMode))
 
     def sendSessionKey(self, sessionKeyLength):
         sessionKey = self.keyController.generateSessionKey(sessionKeyLength)
+        self.keyController.lastSessionKey = sessionKey
         encryptedSessionKey = self.keyController.encryptSessionKey(sessionKey, self.recipientPublicKey)
 
-        sessionKeyFrame = Frame(FrameType.SESSION_KEY, encryptedSessionKey, self.clientName).serialize()
-        sessionKeySizeFrame = Frame(FrameType.SIZE, struct.pack('I', len(sessionKeyFrame))).serialize()
-        self.s.sendall(sessionKeySizeFrame)
-        self.s.sendall(sessionKeyFrame)
+        self.sendFrame(Frame(FrameType.SESSION_KEY, encryptedSessionKey, self.clientName))
 
         return sessionKey
 
@@ -172,15 +182,15 @@ class ClientNetworkController:
         if frame.type == FrameType.MSG or frame.type == FrameType.FILE or frame.type == FrameType.FILE_END:
             sessionKey = self.sendSessionKey(32)
 
-            encryptedData = self.keyController.encryptData(frame.data, sessionKey[0:16], sessionKey[16:32], self.cipherMode)
+            encryptedData = self.keyController.encryptData(frame.data, sessionKey, self.cipherMode)
             frame.data = encryptedData
             print("data has been encrypted")
 
-        serialized = frame.serialize()
-        sizeFrame = Frame(FrameType.SIZE, struct.pack('I', len(serialized)))
-        self.s.sendall(sizeFrame.serialize())
-        self.s.sendall(serialized)
-        print("data has been sent")
+        dataFrame = frame.serialize()
+        sizeFrame = Frame(FrameType.SIZE, struct.pack('I', len(dataFrame))).serialize()
+        self.s.sendall(sizeFrame)
+        self.s.sendall(dataFrame)
+        print(f"{frame.type} has been sent")
 
     def addView(self, view):
         self.view = view

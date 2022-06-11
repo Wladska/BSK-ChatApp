@@ -38,13 +38,6 @@ class Server:
             recvFrame = pickle.loads(message)
             size = default_size
             packets = []
-            if recvFrame.type == FrameType.CLOSE:
-                # close the connection
-                conn.close()
-                self.clients.remove((conn, addr))
-                connected = False
-                print(f"Client {addr} disconnected!")
-                break
 
             if recvFrame.type == FrameType.SIZE:
                 size = struct.unpack('I', recvFrame.data)
@@ -60,7 +53,14 @@ class Server:
                         size = size[0]
                     elif recvFrame.type == FrameType.FILE_END:
                         break
-
+            elif recvFrame.type == FrameType.CLOSE:
+                # close the connection
+                conn.shutdown(socket.SHUT_WR)
+                conn.close()
+                self.clients.remove((conn, addr))
+                connected = False
+                print(f"Client {addr}: {recvFrame.user} disconnected!")
+                break
 
             # broadcast message
             self.broadcastMessage(message)

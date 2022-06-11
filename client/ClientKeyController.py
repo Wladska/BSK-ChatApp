@@ -17,10 +17,10 @@ class ClientKeyController:
         self.privateKeyPath = self.keyPath + PRIVATE_KEY_PATH
         self.publicKeyPath = self.keyPath + PUBLIC_KEY_PATH
 
-        self.receivedSessionKey = None
+        self.lastSessionKey = None
 
     def getKeys(self):
-        hashed = RSACrypto.generateHash(self.password)
+        hashedPass = RSACrypto.generateHash(self.password)
 
         if not path.exists(self.keyPath):
             makedirs(self.privateKeyPath)
@@ -28,13 +28,16 @@ class ClientKeyController:
 
             private, public = RSACrypto.generateKeyPair()
 
-            RSACrypto.saveKey(private, hashed, self.privateKeyPath)
-            RSACrypto.saveKey(public, hashed, self.publicKeyPath)
+            RSACrypto.saveKey(private, hashedPass, self.privateKeyPath)
+            RSACrypto.saveKey(public, hashedPass, self.publicKeyPath)
 
             return private, public
         else:
-            private = RSACrypto.getKey(hashed, self.privateKeyPath)
-            public = RSACrypto.getKey(hashed, self.publicKeyPath)
+            try:
+                private = RSACrypto.getKey(hashedPass, self.privateKeyPath)
+                public = RSACrypto.getKey(hashedPass, self.publicKeyPath)
+            except:
+                private, public = RSACrypto.generateKeyPair()
 
             return private, public
 
@@ -47,12 +50,12 @@ class ClientKeyController:
     def decryptSessionKey(self, sessionKey, decryptionKey):
         return RSACrypto.decrypt(sessionKey, decryptionKey)
 
-    def encryptData(self, data, key, iv, mode):
-        encryptedData = AESCrypto.encrypt(data, key, iv, mode)
+    def encryptData(self, data, secretKey, mode):
+        encryptedData = AESCrypto.encrypt(data, secretKey, mode)
 
         return encryptedData
 
-    def decryptData(self, data, key, iv, mode):
-        decryptedData = AESCrypto.decrypt(data, key, iv, mode)
+    def decryptData(self, data, secretKey, mode):
+        decryptedData = AESCrypto.decrypt(data, secretKey, mode)
 
         return decryptedData

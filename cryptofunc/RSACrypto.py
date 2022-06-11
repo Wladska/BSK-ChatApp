@@ -2,6 +2,7 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 import hashlib
 import cryptofunc.AESCrypto as AESCrypto
+import cryptofunc.SessionKeyCrypto as SessionKeyCrypto
 
 
 def generateKeyPair():
@@ -10,10 +11,16 @@ def generateKeyPair():
     private = key.export_key()
     public = key.public_key().export_key()
 
-    # print(private)
-    # print(public)
+    print(private)
+    print(public)
 
     return private, public
+
+
+def generateDummyPrivateKey():
+    key = RSA.generate(2048)
+
+    return key.export_key()
 
 
 def generateHash(password):
@@ -21,28 +28,27 @@ def generateHash(password):
 
 
 # encrypts and saves key to file
-def saveKey(key, hashed, path):
-    aesKey = hashed[0:16]
-    aesIV = hashed[16:32]
-
-    encrypted = AESCrypto.encrypt(key, aesKey, aesIV)
+def saveKey(key, hashedPass, path):
+    encrypted = AESCrypto.encrypt(key, hashedPass)
 
     with open(path+"key", "w+b") as f:
         f.write(encrypted)
 
 
 # decrypts the key and returns it
-def getKey(hashed, path):
-    aesKey = hashed[0:16]
-    aesIV = hashed[16:32]
-
+def getKey(hashedPass, path):
     with open(path+"key", "r+b") as f:
         data = f.read()
-        return AESCrypto.decrypt(data, aesKey, aesIV)
+        return AESCrypto.decrypt(data, hashedPass)
 
 
 def encrypt(data, key):
-    rsaKey = RSA.import_key(key)
+    try:
+        rsaKey = RSA.import_key(key)
+    except:
+        key = generateDummyPrivateKey()
+        rsaKey = RSA.import_key(key)
+    # rsaKey = RSA.import_key(key)
     cipher = PKCS1_OAEP.new(rsaKey)
     encrypted = cipher.encrypt(data)
 
@@ -52,6 +58,10 @@ def encrypt(data, key):
 def decrypt(data, key):
     rsaKey = RSA.import_key(key)
     cipher = PKCS1_OAEP.new(rsaKey)
-    decrypted = cipher.decrypt(data)
+
+    try:
+        decrypted = cipher.decrypt(data)
+    except:
+        decrypted = SessionKeyCrypto.generate(32)
 
     return decrypted
