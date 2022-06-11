@@ -22,9 +22,7 @@ class Client:
         self.password = password
 
         self.keyController = ClientKeyController(self.name, self.password)
-        self.privateKey, self.publicKey = self.keyController.getKeys()
-        # print(self.privateKey)
-        # print(self.publicKey)
+        self.keyController.getKeys()
         self.controller = ClientNetworkController(self.name, self.keyController)
 
         self.chatView = ClientChatView(self.rootWindow, self.name, self.controller)

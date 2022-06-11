@@ -82,23 +82,29 @@ class ClientNetworkController:
                 if recvFrame.type == FrameType.SIZE:
                     size = struct.unpack('I', recvFrame.data)
                     size = size[0]
+
                 elif recvFrame.type == FrameType.ACK:
                     self.view.displayAcknowledgement(recvFrame.user)
+
                 elif recvFrame.type == FrameType.FILE_END:
-                    self.view.displayMessage(f"{recvFrame.user}:Sent {recvFrame.fileName}")
+                    self.view.displayMessage(f"{recvFrame.user} sent {recvFrame.fileName}")
                     self.sendAcknowledgement()
+
                 elif recvFrame.type == FrameType.MSG:
                     try:
                         self.view.displayMessage(f"{recvFrame.user}:{recvFrame.data.decode('utf-8')}")
                     except UnicodeDecodeError:
                         self.view.displayMessage(f"{recvFrame.user}:{recvFrame.data}")
                     self.sendAcknowledgement()
+
                 elif recvFrame.type == FrameType.FILE:
-                    uploadDir = "downloads\\" + self.clientName
-                    if not os.path.exists(uploadDir):
-                        os.makedirs(uploadDir)
-                    with open(uploadDir + "\\" + recvFrame.fileName, "a+b") as f:
-                        f.write(recvFrame.data)
+                    if recvFrame.user != self.clientName:
+                        uploadDir = "downloads\\" + self.clientName
+                        if not os.path.exists(uploadDir):
+                            os.makedirs(uploadDir)
+                        with open(uploadDir + "\\" + recvFrame.fileName, "a+b") as f:
+                            f.write(recvFrame.data)
+
                 elif recvFrame.type == FrameType.HELLO_REQ:
                     if recvFrame.user != self.clientName:
                         # print(f"received a hello request from {recvFrame.user}, sending my hello")
@@ -106,6 +112,7 @@ class ClientNetworkController:
                     else:
                         # print("received my own hello request frame")
                         pass
+
                 elif recvFrame.type == FrameType.HELLO:
                     if recvFrame.user != self.clientName:
                         self.recipientPublicKey = recvFrame.data
@@ -114,11 +121,12 @@ class ClientNetworkController:
                     else:
                         # print("received my own hello frame")
                         pass
+
                 elif recvFrame.type == FrameType.SESSION_KEY:
                     if recvFrame.user != self.clientName:
                         private, _ = self.keyController.getKeys()
                         self.keyController.lastSessionKey = self.keyController.decryptSessionKey(recvFrame.data, private)
-                        print(f"received session key from {recvFrame.user}")
+                        # print(f"received session key from {recvFrame.user}")
             except:
                 try:
                     self.stopCommunication()
@@ -184,13 +192,13 @@ class ClientNetworkController:
 
             encryptedData = self.keyController.encryptData(frame.data, sessionKey, self.cipherMode)
             frame.data = encryptedData
-            print("data has been encrypted")
+            # print("data has been encrypted")
 
         dataFrame = frame.serialize()
         sizeFrame = Frame(FrameType.SIZE, struct.pack('I', len(dataFrame))).serialize()
         self.s.sendall(sizeFrame)
         self.s.sendall(dataFrame)
-        print(f"{frame.type} has been sent")
+        # print(f"{frame.type} has been sent")
 
     def addView(self, view):
         self.view = view
