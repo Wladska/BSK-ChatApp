@@ -18,6 +18,7 @@ class ClientKeyController:
         self.publicKeyPath = self.keyPath + PUBLIC_KEY_PATH
 
         self.lastSessionKey = None
+        self.dummyPrivateKey = None
 
     def getKeys(self):
         hashedPass = RSACrypto.generateHash(self.password)
@@ -27,6 +28,7 @@ class ClientKeyController:
             makedirs(self.publicKeyPath)
 
             private, public = RSACrypto.generateKeyPair()
+            self.dummyPrivateKey = RSACrypto.generateDummyPrivateKey()
 
             RSACrypto.saveKey(private, hashedPass, self.privateKeyPath)
             RSACrypto.saveKey(public, hashedPass, self.publicKeyPath)
@@ -38,6 +40,7 @@ class ClientKeyController:
                 public = RSACrypto.getKey(hashedPass, self.publicKeyPath)
             except:
                 private, public = RSACrypto.generateKeyPair()
+                self.dummyPrivateKey = RSACrypto.generateDummyPrivateKey()
 
             return private, public
 
@@ -45,7 +48,7 @@ class ClientKeyController:
         return SessionKeyCrypto.generate(length)
 
     def encryptSessionKey(self, sessionKey, encryptionKey):
-        return RSACrypto.encrypt(sessionKey, encryptionKey)
+        return RSACrypto.encrypt(sessionKey, encryptionKey, self.dummyPrivateKey)
 
     def decryptSessionKey(self, sessionKey, decryptionKey):
         return RSACrypto.decrypt(sessionKey, decryptionKey)

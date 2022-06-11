@@ -42,13 +42,12 @@ def getKey(hashedPass, path):
         return AESCrypto.decrypt(data, hashedPass)
 
 
-def encrypt(data, key):
+def encrypt(data, key, dummyPrivateKey=None):
     try:
         rsaKey = RSA.import_key(key)
     except:
-        key = generateDummyPrivateKey()
-        rsaKey = RSA.import_key(key)
-    # rsaKey = RSA.import_key(key)
+        rsaKey = RSA.import_key(dummyPrivateKey)
+
     cipher = PKCS1_OAEP.new(rsaKey)
     encrypted = cipher.encrypt(data)
 
